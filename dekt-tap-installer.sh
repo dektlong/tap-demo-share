@@ -25,8 +25,8 @@
 
         echo
         echo "DNS SETUP"
-        echo "1. run kubectl get svc envoy --namespace tanzu-system-ingress"
-        echo "2. Create and A record mapping *.$(yq e .cnrs.domain_name tap-values.yaml) to the public IP output of phase 1"
+        echo "1. Run: kubectl get svc envoy --namespace tanzu-system-ingress"
+        echo "2. Create: A record mapping *.$(yq e .cnrs.domain_name tap-values.yaml) to the public IP output of phase 1"
         echo
         echo "Hit any key once complete..."
         read
@@ -62,7 +62,7 @@
     #setup-dev-ns
     setup-dev-ns () {
  
-        tanzu secret registry add registry-credentials 
+        tanzu secret registry add registry-credentials \
             --server $PRIVATE_REPO \
             --username $PRIVATE_REPO_USER \
             --password $PRIVATE_REPO_PASSWORD \
