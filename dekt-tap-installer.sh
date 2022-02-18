@@ -10,7 +10,7 @@
         
     TAP_VERSION="1.0.0"
 
-    DEV_NAMESPACE="dekt-apps"
+    DEV_NAMESPACE="my-apps"
   
 #################### installers ################
 
@@ -81,6 +81,11 @@
 
     #cleanup
     cleanup() {
+
+        tanzu package installed delete tap --namespace tap-install -y
+        tanzu package repository delete tanzu-tap-repository --namespace tap-install -y
+        kubectl delete ns tap-install
+        kubectl delete ns $DEV_NAMESPACE
 
         
     }
