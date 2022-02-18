@@ -2,28 +2,28 @@ profile: full
 #profile: light
 ceip_policy_disclosed: true 
 buildservice:
-  kp_default_repository: "harbor.apps.cf.tanzutime.com/dekt-system/build-service"
-  kp_default_repository_username: "dektlong"
-  kp_default_repository_password: "appCl0udlong"
-  tanzunet_username: "dekel@vmware.com"
-  tanzunet_password: "appCl0ud#"
+  kp_default_repository: "MY_CONTAINER_REGISTRY/MY_SYSTEM_REPO/build-service"
+  kp_default_repository_username: 
+  kp_default_repository_password: 
+  tanzunet_username: 
+  tanzunet_password: 
   descriptor_name: "tap-1.0.0-full"
   enable_automatic_dependency_updates: true
 supply_chain: basic
 
 ootb_supply_chain_basic:
   registry:
-    server: "harbor.apps.cf.tanzutime.com"
-    repository: "dekt-apps"
+    server: "MY_CONTAINER_REGISTRY"
+    repository: "MY_APPS_REPO"
   gitops:
     ssh_secret: ""
 
 learningcenter:
-  ingressDomain: "dekt.io"
+  ingressDomain: "MY_INGRESS_DOMAIN"
   
 cnrs:
   #domain_template: "{{.Name}}.{{.Domain}}"
-  domain_name: "dekt.io"
+  domain_name: "MY_INGRESS_DOMAIN"
 
 contour:
   envoy:
@@ -37,10 +37,10 @@ accelerator:
 tap_gui:
   service_type: ClusterIP
   ingressEnabled: "true"
-  ingressDomain: "dekt.io"
+  ingressDomain: "MY_INGRESS_DOMAIN"
   app_config:
     app:
-      baseUrl: "http://tap-gui.dekt.io"
+      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
     catalog:
       locations:
         - type: url
@@ -48,9 +48,9 @@ tap_gui:
         - type: url
           target: https://github.com/dektlong/tap-demo-share/blob/main/backstage/yelb/catalog-info.yaml
     backend:
-      baseUrl: "http://tap-gui.dekt.io"
+      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
       cors:
-        origin: "http://tap-gui.dekt.io"
+        origin: "http://tap-gui.MY_INGRESS_DOMAIN"
 
 metadata_store:
   app_service_type: LoadBalancer # (optional) Defaults to LoadBalancer. Change to NodePort for distributions that don't support LoadBalancer
