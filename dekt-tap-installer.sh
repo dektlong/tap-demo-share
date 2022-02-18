@@ -23,7 +23,13 @@
 
         setup-dev-ns
 
-        scripts/ingress-handler.sh tap
+        echo
+        echo "DNS SETUP"
+        echo "1. run kubectl get svc envoy --namespace tanzu-system-ingress"
+        echo "2. Create and A record mapping *.$(yq e .cnrs.domain_name tap-values.yaml) to the public IP output of phase 1"
+        echo
+        echo "Hit any key once complete..."
+        read
 
         tanzu package installed update tap --package-name tap.tanzu.vmware.com --version $TAP_VERSION -n tap-install -f tap-values.yaml
 
@@ -53,44 +59,17 @@
             --namespace tap-install
     }
 
-    #install-api-gateway
-    install-api-gateway () {
-
-        kubectl create ns $GATEWAY_NS
-
-        kubectl create secret docker-registry spring-cloud-gateway-image-pull-secret \
-            --docker-server=$PRIVATE_REPO \
-            --docker-username=$PRIVATE_REPO_USER \
-            --docker-password=$PRIVATE_REPO_PASSWORD \
-            --namespace $GATEWAY_NS
+    #setup-dev-ns
+    setup-dev-ns () {
  
-        $GW_INSTALL_DIR/scripts/install-spring-cloud-gateway.sh --namespace $GATEWAY_NS
+        tanzu secret registry add registry-credentials 
+            --server $PRIVATE_REPO \
+            --username $PRIVATE_REPO_USER \
+            --password $PRIVATE_REPO_PASSWORD \
+            --namespace $DEV_NAMESPACE
+        
+        kubectl apply -f supplychain-rbac.yaml -n $DEV_NAMESPACE
 
-    }
-
-    #setup-demo-ns
-    setup-demo-ns () {
- 
-        #accelerators 
-        kustomize build supplychain/accelerators | kubectl apply -f -
-
-        #supplychain (default + web-backend 'dummy')
-        tanzu secret registry add registry-credentials --server $PRIVATE_REPO --username $PRIVATE_REPO_USER --password $PRIVATE_REPO_PASSWORD -n $DEV_NAMESPACE
-        kubectl apply -f .config/supplychain-rbac.yaml -n $DEV_NAMESPACE
-        kubectl apply -f supplychain/supplychain-src-to-api.yaml
-
-        #cluster wide disable scale2zero
-        kubectl apply -f config-templates/disable-scale2zero.yaml 
-
-        #brownfield API
-        kubectl create ns $BROWNFIELD_NS
-        kubectl create secret generic sso-credentials --from-env-file=.config/sso-creds.txt -n api-portal
-        kustomize build workloads/brownfield-apis | kubectl apply -f -
-
-        #rabbitmq (operator and instance)
-        kapp -y deploy --app rmq-operator --file https://github.com/rabbitmq/cluster-operator/releases/download/v1.9.0/cluster-operator.yml
-        kubectl apply -f supplychain/templates/rabbitmq-clusterrole.yaml
-        kubectl apply -f workloads/devx-mood/rabbitmq-instance.yaml -n $DEV_NAMESPACE
     }
     
     #deploy demo workloads
@@ -100,13 +79,10 @@
         tanzu apps workload create -f workloads/devx-mood/mood-portal.yaml -y
     }
 
-    #reset demo apps
-    reset() {
+    #cleanup
+    cleanup() {
 
-        tanzu apps workload delete mood-portal -n $DEV_NAMESPACE -y
-        tanzu apps workload delete mood-sensors -n $DEV_NAMESPACE -y
-        kubectl delete pod -l app=backstage -n tap-gui
-        kubectl -n app-live-view delete pods -l=name=application-live-view-connector
+        
     }
 
     #incorrect usage
@@ -115,70 +91,21 @@
         echo
         echo "Incorrect usage. Please specify one of the following: "
         echo
-        echo "  init [aks / eks]"
+        echo "  init"
         echo
-        echo "  deploy"
-        echo
-        echo "  reset"
-        echo
-        echo "  cleanup [aks / eks]"
-        echo
-        echo "  runme [function-name]"
-        echo
+        echo "  cleanup"
         exit
     
-    }
-
-    #relocate-images
-    relocate-gw-images() {
-
-        echo "Make sure docker deamon is running..."
-        read
-        
-        docker login $PRIVATE_REPO -u $PRIVATE_REPO_USER -p $PRIVATE_REPO_PASSWORD
-        
-        $GW_INSTALL_DIR/scripts/relocate-images.sh $PRIVATE_REPO/$PRIVATE_REGISTRY_SYSTEM_REPO
     }
 
 #################### main ##########################
 
 case $1 in
 init)
-    case $2 in
-    aks)
-        scripts/aks-handler.sh create
-        ;;
-    eks)
-        scripts/eks-handler.sh create
-        ;;
-    *)
-        incorrect-usage
-        ;;
-    esac
     install
     ;;
 cleanup)
-    case $2 in
-    aks)
-        scripts/aks-handler.sh delete
-        ;;
-    eks)
-        scripts/eks-handler.sh delete
-        ;;
-    *)
-        incorrect-usage
-        ;;
-    esac
-    rm ~/Downloads/workload.yaml
-    ;;
-reset)
-    reset
-    ;;
-deploy)
-    deploy
-    ;;
-runme)
-    $2
+    cleanup
     ;;
 *)
     incorrect-usage
