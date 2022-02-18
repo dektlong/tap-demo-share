@@ -19,11 +19,11 @@ ootb_supply_chain_basic:
     ssh_secret: ""
 
 learningcenter:
-  ingressDomain: "MY_INGRESS_DOMAIN"
+  ingressDomain: MY_INGRESS_DOMAIN
   
 cnrs:
   #domain_template: "{{.Name}}.{{.Domain}}"
-  domain_name: "MY_INGRESS_DOMAIN"
+  domain_name: MY_INGRESS_DOMAIN
 
 contour:
   envoy:
@@ -37,10 +37,10 @@ accelerator:
 tap_gui:
   service_type: ClusterIP
   ingressEnabled: "true"
-  ingressDomain: "MY_INGRESS_DOMAIN"
+  ingressDomain: MY_INGRESS_DOMAIN
   app_config:
     app:
-      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
+      baseUrl: http://tap-gui.MY_INGRESS_DOMAIN
     catalog:
       locations:
         - type: url
@@ -48,9 +48,9 @@ tap_gui:
         - type: url
           target: https://github.com/dektlong/tap-demo-share/blob/main/backstage/yelb/catalog-info.yaml
     backend:
-      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
+      baseUrl: http://tap-gui.MY_INGRESS_DOMAIN
       cors:
-        origin: "http://tap-gui.MY_INGRESS_DOMAIN"
+        origin: http://tap-gui.MY_INGRESS_DOMAIN
 
 metadata_store:
   app_service_type: LoadBalancer # (optional) Defaults to LoadBalancer. Change to NodePort for distributions that don't support LoadBalancer
