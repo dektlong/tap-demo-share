@@ -2,7 +2,7 @@ profile: full
 #profile: light
 ceip_policy_disclosed: true 
 buildservice:
-  kp_default_repository: #e.g "harbor.apps.cf.tanzutime.com/dekt-system/build-service"
+  kp_default_repository: "MY_CONTAINER_REGISTRY/MY-SYSTEM_REPO/build-service"
   kp_default_repository_username: 
   kp_default_repository_password: 
   tanzunet_username: 
@@ -13,17 +13,17 @@ supply_chain: basic
 
 ootb_supply_chain_basic:
   registry:
-    server: #e.g. "harbor.apps.cf.tanzutime.com"
-    repository: #e.g. "dekt-apps"
+    server: "MY_CONTAINER_REGISTRY"
+    repository: "MY-APPS_REPO"
   gitops:
     ssh_secret: ""
 
 learningcenter:
-  ingressDomain: #e.g. "dekt.io"
+  ingressDomain: "MY_INGRESS_DOMAIN"
   
 cnrs:
   #domain_template: "{{.Name}}.{{.Domain}}"
-  domain_name: #e.g. "dekt.io"
+  domain_name: "MY_INGRESS_DOMAIN"
 
 contour:
   envoy:
@@ -37,26 +37,24 @@ accelerator:
 tap_gui:
   service_type: ClusterIP
   ingressEnabled: "true"
-  ingressDomain: #e.g. "dekt.io"
+  ingressDomain: "MY_INGRESS_DOMAIN"
   app_config:
     app:
-      baseUrl: #e.g. "http://tap-gui.dekt.io"
+      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
     catalog:
       locations:
         - type: url
-          target: https://github.com/dektlong/_DevXDemo/blob/main/config-templates/backstage/default/catalog-info.yaml
+          target: https://github.com/dektlong/tap-demo-share/blob/main/backstage/default/catalog-info.yaml
         - type: url
-          target: https://github.com/dektlong/_DevXDemo/blob/main/config-templates/backstage/yelb/catalog-info.yaml
-        - type: url
-          target: https://github.com/dektlong/_DevXDemo/blob/main/config-templates/backstage/dekt/catalog-info.yaml
+          target: https://github.com/dektlong/tap-demo-share/blob/main/backstage/yelb/catalog-info.yaml
     backend:
-      baseUrl: http://tap-gui.sys.dekt.io
+      baseUrl: "http://tap-gui.MY_INGRESS_DOMAIN"
       cors:
-        origin: http://tap-gui.sys.dekt.io
+        origin: "http://tap-gui.MY_INGRESS_DOMAIN"
 
 metadata_store:
   app_service_type: LoadBalancer # (optional) Defaults to LoadBalancer. Change to NodePort for distributions that don't support LoadBalancer
 
 grype:
-  namespace: "dekt-apps" # (optional) Defaults to default namespace.
+  namespace: # (optional) Defaults to default namespace.
   targetImagePullSecret: "registry-credentials"
