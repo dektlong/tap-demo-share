@@ -2,17 +2,15 @@
 
 #################### configs #######################
 
-    source .config/config-values.env
-    PRIVATE_REPO=$(yq e .ootb_supply_chain_basic.registry.server .config/tap-values.yaml)
-    PRIVATE_REPO_USER=$(yq e .buildservice.kp_default_repository_username .config/tap-values.yaml)
-    PRIVATE_REPO_PASSWORD=$(yq e .buildservice.kp_default_repository_password .config/tap-values.yaml)
-    TANZU_NETWORK_USER=$(yq e .buildservice.tanzunet_username .config/tap-values.yaml)
-    TANZU_NETWORK_PASSWORD=$(yq e .buildservice.tanzunet_password .config/tap-values.yaml)
-    
-    GATEWAY_NS="scgw-system"
-    BROWNFIELD_NS="brownfield-apis"
-    
+    PRIVATE_REPO=$(yq e .ootb_supply_chain_basic.registry.server tap-values.yaml)
+    PRIVATE_REPO_USER=$(yq e .buildservice.kp_default_repository_username tap-values.yaml)
+    PRIVATE_REPO_PASSWORD=$(yq e .buildservice.kp_default_repository_password tap-values.yaml)
+    TANZU_NETWORK_USER=$(yq e .buildservice.tanzunet_username tap-values.yaml)
+    TANZU_NETWORK_PASSWORD=$(yq e .buildservice.tanzunet_password tap-values.yaml)
+        
     TAP_VERSION="1.0.0"
+
+    DEV_NAMESPACE="dekt-apps"
   
 #################### installers ################
 
@@ -21,15 +19,13 @@
 
         install-tap-prereq
 
-        tanzu package install tap -p tap.tanzu.vmware.com -v $TAP_VERSION  --values-file .config/tap-values.yaml -n tap-install
+        tanzu package install tap -p tap.tanzu.vmware.com -v $TAP_VERSION  --values-file tap-values.yaml -n tap-install
 
-           install-api-gateway #temp until GW is available as a TAP package 
-        
-        setup-demo-ns
+        setup-dev-ns
 
         scripts/ingress-handler.sh tap
 
-        tanzu package installed update tap --package-name tap.tanzu.vmware.com --version $TAP_VERSION -n tap-install -f .config/tap-values.yaml
+        tanzu package installed update tap --package-name tap.tanzu.vmware.com --version $TAP_VERSION -n tap-install -f tap-values.yaml
 
     }
 
@@ -40,12 +36,12 @@
         export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
         export INSTALL_REGISTRY_USERNAME=$TANZU_NETWORK_USER
         export INSTALL_REGISTRY_PASSWORD=$TANZU_NETWORK_PASSWORD
-        pushd config-templates/tanzu-cluster-essentials
+        pushd tanzu-cluster-essentials
         ./install.sh
         pushd
 
         kubectl create ns tap-install
-        kubectl create ns $DEMO_APPS_NS
+        kubectl create ns $DEV_NAMESPACE
         
         tanzu secret registry add tap-registry \
             --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
@@ -79,8 +75,8 @@
         kustomize build supplychain/accelerators | kubectl apply -f -
 
         #supplychain (default + web-backend 'dummy')
-        tanzu secret registry add registry-credentials --server $PRIVATE_REPO --username $PRIVATE_REPO_USER --password $PRIVATE_REPO_PASSWORD -n $DEMO_APPS_NS
-        kubectl apply -f .config/supplychain-rbac.yaml -n $DEMO_APPS_NS
+        tanzu secret registry add registry-credentials --server $PRIVATE_REPO --username $PRIVATE_REPO_USER --password $PRIVATE_REPO_PASSWORD -n $DEV_NAMESPACE
+        kubectl apply -f .config/supplychain-rbac.yaml -n $DEV_NAMESPACE
         kubectl apply -f supplychain/supplychain-src-to-api.yaml
 
         #cluster wide disable scale2zero
@@ -94,7 +90,7 @@
         #rabbitmq (operator and instance)
         kapp -y deploy --app rmq-operator --file https://github.com/rabbitmq/cluster-operator/releases/download/v1.9.0/cluster-operator.yml
         kubectl apply -f supplychain/templates/rabbitmq-clusterrole.yaml
-        kubectl apply -f workloads/devx-mood/rabbitmq-instance.yaml -n $DEMO_APPS_NS
+        kubectl apply -f workloads/devx-mood/rabbitmq-instance.yaml -n $DEV_NAMESPACE
     }
     
     #deploy demo workloads
@@ -107,8 +103,8 @@
     #reset demo apps
     reset() {
 
-        tanzu apps workload delete mood-portal -n $DEMO_APPS_NS -y
-        tanzu apps workload delete mood-sensors -n $DEMO_APPS_NS -y
+        tanzu apps workload delete mood-portal -n $DEV_NAMESPACE -y
+        tanzu apps workload delete mood-sensors -n $DEV_NAMESPACE -y
         kubectl delete pod -l app=backstage -n tap-gui
         kubectl -n app-live-view delete pods -l=name=application-live-view-connector
     }
