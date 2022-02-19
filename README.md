@@ -14,6 +14,7 @@ This repo contains artifacts to setup TAP components and developer namespace, re
 ## Setup
 - ```./dekt-tap-installer.sh init``` 
   - Note: The script will pause after installing core TAP and ask you to allocate a wildcard subdomain for your developer’s applications 
+  - Please read https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install.html#configure-loadbalancer-for-contour-ingress-6 prior
   
 ## Start
 
